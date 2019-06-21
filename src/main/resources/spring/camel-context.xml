@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:camel="http://camel.apache.org/schema/spring" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+	<bean
+		class="org.apache.camel.component.google.drive.GoogleDriveConfiguration"
+		id="googledrive">
+		<property name="applicationName" value="camel-google-drive/1.0" />
+		<property name="clientId"
+			value="893589349320-ie3bck6o8u2an2862e64k5dqd9e1gvrs.apps.googleusercontent.com" />
+		<property name="clientSecret" value="Tz_LjkX_hALS4qYfMmCycRsJ" />
+	</bean>
+	<bean id="processFile" class="com.redhat.training.file.converter.CreateFile" />
+	<!-- Define a traditional camel context here -->
+	<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+		<propertyPlaceholder id="properties" location="route.properties" />
+		<endpoint id="csv2json"
+			uri="dozer:csv2json2?sourceModel=org.acme.Customer&amp;targetModel=org.globex.Account&amp;marshalId=json&amp;unmarshalId=csv&amp;mappingFile=transformation.xml" />
+		<!-- CSV Input & JSon OutPut DataFormat -->
+		<dataFormats>
+			<bindy classType="org.acme.Customer" id="csv" type="Csv" />
+			<json id="json" library="Jackson" />
+		</dataFormats>
+		<restConfiguration apiContextPath="api-doc"
+			bindingMode="off" component="servlet" contextPath="/rest" port="9080" />
+		<rest apiDocs="true" id="rest-130579d7-1c1b-409c-a496-32d6feb03006"
+			path="/service">
+			<post id="32d64e54-9ae4-42d3-b175-9cfd81733379" uri="/offers">
+				<responseMessage code="200" message="The order with the given id" />
+				<to uri="direct:savedoc" />
+			</post>
+			<get uri="/offers/{id}">
+				<param dataType="int" description="The order id" name="id"
+					type="path" />
+				<to uri="direct:getdoc" />
+			</get>
+		</rest>
+		<route id="_fileRoute">
+			<from uri="file://{{fileInput}}" />
+			<multicast>
+				<to uri="direct:writeTOLocalFile"/>
+				<to uri="direct:writeToGoogle"/>
+			</multicast>
+		</route>
+		
+		<route id="writeTOFile">
+			<from uri="direct:writeTOLocalFile"/>
+			<to id="_to1" uri="file:{{fileOutput}}?fileName=offer-${random(10,100)}.txt" />
+		</route>
+		<route id="googleDrive">
+			<from uri="direct:writeToGoogle"/>
+			<process ref="processFile" />
+			<to id="_to2"
+				uri="google-drive://drive-files/insert?applicationName=commanding-tome-242320&amp;clientId=421644133566-g3kshejfcl6oek3eibj57tpojjrc1uit.apps.googleusercontent.com&amp;clientSecret=i8tzdXD3JenP1YYe4JcIOZ25&amp;accessToken=ya29.GlsaB9_IjvzXD9AL6-jl5pj-6Mbzdu6XIJqIRupE4HN5Hs9G6SolXb7Oh_NN2pEH8NQx8l4AWR-KxPS_WcqTPG4eib73UoWPMrIT5CAJtXX9_MisyOL3jjHgg_tG&amp;refreshToken=1/I6-38DWbje3AznctOWtECdNhCVmo-xzOYTioa3O4AtU" />
+		</route>
+		<route id="_route2" streamCache="true">
+			<!-- Return the offers -->
+			<from id="_from1" uri="direct:getdoc" />
+			<log id="_log3" message="received request for docs: ${body}" />
+			<setBody id="_setBody3">
+				<!-- <simple>${body}</simple> TBD-->
+				<constant>"abracadabra"</constant>
+			</setBody>
+		</route>
+	</camelContext>
+</beans>
