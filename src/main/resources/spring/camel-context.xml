@@ -12,7 +12,6 @@
     <!-- Define a traditional camel context here -->
     <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
         <propertyPlaceholder id="properties" location="route.properties"/>
-        <!-- EXCLUDE-BEGIN -->
         <endpoint id="csv2json" uri="dozer:csv2json2?sourceModel=org.acme.Customer&amp;targetModel=org.globex.Account&amp;marshalId=json&amp;unmarshalId=csv&amp;mappingFile=transformation.xml"/>
         <!-- CSV Input & JSon OutPut DataFormat -->
         <dataFormats>
@@ -44,32 +43,67 @@
             <from id="_from1" uri="direct:savedoc"/>
             <log loggingLevel="INFO" message="received content: ${body}"/>
             <to uri="file:{{fileOutput}}?fileName=offer-${random(10,100)}.txt" />
-<!--             <setBody> -->
-<!--                 <simple>${header.CamelFileName}</simple> -->
-<!--             </setBody> -->
-<!-- 	    <convertBodyTo type="com.google.api.services.drive.model.File" /> -->
-            <to id="_to2" uri="log:gdrive?showAll=true&amp;multiline=true"/>
 
-<!--             <to uri="google-drive://drive-files/insert?inBody=content" /> -->
-<!-- 	    <to uri="google-drive://drive-files/insert?content=${body}" /> -->
+<!-- template code to call REST service using http4 component; will be changed to match Swift interface-->
 
-<!--             <to uri="github:{{githubName}}?username=nandanj&amp;password=*****&amp;repoOwner=nandanj&amp;repoName=docmanager" /> -->
+<!-- <setHeader headerName="Content-Type" id="_setHeader1"> -->
+<!--                 <constant>application/json</constant> -->
+<!--             </setHeader> -->
+<!--             <setHeader headerName="Accept" id="_setHeader2"> -->
+<!--                 <constant>application/json</constant> -->
+<!--             </setHeader> -->
+<!--             <setHeader headerName="CamelHttpMethod" id="_setHeader3"> -->
+<!--                 <constant>POST</constant> -->
+<!--             </setHeader> -->
+<!--             <setHeader headerName="originalBody" id="_setHeader4"> -->
+<!--                 <simple>${body}</simple> -->
+<!--             </setHeader> -->
+<!--             <setHeader headerName="CamelHttpUri" id="_setHeader5"> -->
+<!--                 <simple>http://{{rest.host}}:{{rest.port}}/rest/customerservice/enrich</simple> -->
+<!--             </setHeader> -->
+<!--             <log id="_log4" message=">> Before calling restClient : ${body}"/> -->
+<!--             <to id="_to8" uri="http4://restClient"/> -->
+<!--             <unmarshal id="_unmarshal2"> -->
+<!--                 <json library="Jackson" unmarshalTypeName="org.globex.Account"/> -->
+<!--             </unmarshal> -->
+<!--             <log id="_log6" message=">> REST Response : ${body}"/> -->
+<!--             <to id="_to2" uri="log:gdrive?showAll=true&amp;multiline=true"/> -->
+
 
             <setBody>
                 <constant>10001</constant>
-<!--                 <simple>${body}</simple> -->
             </setBody>
         </route>
         <route id="_route2" streamCache="true">
             <!-- Return the offers -->
             <from id="_from1" uri="direct:getdoc"/>
             <log loggingLevel="INFO" message="received request for docs: ${body}"/>
-            <setBody>
+<!-- <setHeader headerName="Content-Type" id="_setHeader1"> -->
+<!--                 <constant>application/json</constant> -->
+<!--             </setHeader> -->
+<!--             <setHeader headerName="Accept" id="_setHeader2"> -->
+<!--                 <constant>application/json</constant> -->
+<!--             </setHeader> -->
+<!--             <setHeader headerName="CamelHttpMethod" id="_setHeader3"> -->
+<!--                 <constant>GET</constant> -->
+<!--             </setHeader> -->
+<!--             <setHeader headerName="originalBody" id="_setHeader4"> -->
 <!--                 <simple>${body}</simple> -->
+<!--             </setHeader> -->
+<!--             <setHeader headerName="CamelHttpUri" id="_setHeader5"> -->
+<!--                 <simple>http://{{rest.host}}:{{rest.port}}/rest/customerservice/enrich</simple> -->
+<!--             </setHeader> -->
+<!--             <log id="_log4" message=">> Before calling restClient : ${body}"/> -->
+<!--             <to id="_to8" uri="http4://restClient"/> -->
+<!--             <unmarshal id="_unmarshal2"> -->
+<!--                 <json library="Jackson" unmarshalTypeName="org.globex.Account"/> -->
+<!--             </unmarshal> -->
+<!--             <log id="_log6" message=">> REST Response : ${body}"/> -->
+<!--             <to id="_to2" uri="log:gdrive?showAll=true&amp;multiline=true"/> -->
+            <setBody>
               <constant>"abracadabra"</constant>
             </setBody>
         </route>
 
-        <!-- EXCLUDE-END -->
     </camelContext>
 </beans>
