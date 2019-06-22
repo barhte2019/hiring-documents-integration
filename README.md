@@ -6,14 +6,11 @@ The application utilizes the Spring [`@ImportResource`](http://docs.spring.io/sp
 
 ### Running the application on OpenShift Cluster
 
-. The following set of instructions will guide you on how to deploy the service in an OCP 4.0 cluster.
+The following set of instructions will guide you on how to deploy the service in an OCP 4.0 cluster. An OCP cluster has been provisioned and you may oc login as follows
 
-== An OCP cluster has been provisioned and you may oc login as follows
-
-+
------
+```
 $ oc login https://master.${GUID}.openshift.opentlc.com -u user1 -p r3dh4t1!
------
+```
 
 + Create your project namespace:
 ```
