@@ -22,11 +22,11 @@
         <restConfiguration bindingMode="off" component="servlet" contextPath="/rest" apiContextPath="api-doc"/>
         <rest apiDocs="true"
             id="rest-130579d7-1c1b-409c-a496-32d6feb03006" path="/service">
-            <post id="32d64e54-9ae4-42d3-b175-9cfd81733379" uri="/offers">
+            <post id="32d64e54-9ae4-42d3-b175-9cfd81733379" uri="/offers/{jobId}/{candidateId}">
 	      <responseMessage code="200" message="The order with the given id"/>
                 <to uri="direct:savedoc"/>
             </post>
-            <get uri="/offers/{id}">
+            <get uri="/offers/jobId}/{candidateId}">
 	      <param name="id" type="path" dataType="int" description="The order id"/>
                 <to uri="direct:getdoc"/>
             </get>
@@ -41,7 +41,8 @@
             <!-- Save documents to a local directory -->
             <from id="_from1" uri="direct:savedoc"/>
             <log loggingLevel="INFO" message="received content: ${body}"/>
-            <to uri="file:{{fileOutput}}?fileName=offer-${random(10,100)}.txt" />
+            <log loggingLevel="INFO" message="received jobId, candidateId: ${header.jobId}, ${header.candidateId}"/>
+<!--             <to uri="file:{{fileOutput}}?fileName=offer-${random(10,100)}.txt" /> -->
 	    <!-- sample curl request: curl -i http://192.168.0.20:8080/v1/AUTH_test/TEST/tmp/nandantestfile1 -T /tmp/nandantestfile1 -X PUT -H "Content-Length: 76" -H "X-Auth-Token: AUTH_tka1ed04fceff14d5e8ad1d647ddbba9fb" -->
 	    <setHeader headerName="Content-Type" id="_setHeader1">
                 <constant>application/json</constant>
@@ -55,17 +56,38 @@
 <!--             <setHeader headerName="originalBody" id="_setHeader5"> -->
 <!--                 <simple>${body}</simple> -->
 <!--             </setHeader> -->
+
             <setHeader headerName="Authorization" id="_setHeader4">
-                <constant>"AUTH_tka1ed04fceff14d5e8ad1d647ddbba9fb"</constant>
+                <constant>Bearer: AUTH_tk110762ac424540ad859b62bcdae9e9df</constant>
             </setHeader>
+
+            <setHeader headerName="Connection">
+                <constant>close</constant>
+            </setHeader>
+            <setHeader headerName="Exchange.HTTP_PATH">
+                <constant></constant>
+            </setHeader>
+
             <setHeader headerName="CamelHttpUri" id="_setHeader6">
-                <simple>http://192.168.0.20:8080/v1/AUTH_test/TEST/tmp/nandantestfile1</simple>
+                <constant>http://192.168.0.20:8080/v1/AUTH_test/TEST?jobId=${header.jobId}&amp;candidateId=${header.candidateId}</constant>
             </setHeader>
             <log id="_log4" message=">> Before calling PUT on swiftClient : ${body}"/>
             <to uri="http4://restClient"/>
+
+	    <!-- try the Openstack swift component to create the object, get operation to get-->
+            <setHeader headerName="operation">
+                <constant>create</constant>
+            </setHeader>
+            <setHeader headerName="containerName">
+                <constant>TEST</constant>
+            </setHeader>
+            <setHeader headerName="objectName">
+                <constant>/tmp/nandantestfile1</constant>
+            </setHeader>
+<!-- 	    <to uri="openstack-swift://192.168.0.20:8080/v3?password=testing&amp;username=tester&amp;project=test&amp;subsystem=objects"/> -->
+
             <log id="_log6" message=">> REST Response : ${body}"/>
             <to uri="log:gdrive?showAll=true&amp;multiline=true"/>
-
 <!--             <setBody> -->
 <!--                 <constant>10001</constant> -->
 <!--             </setBody> -->
@@ -75,6 +97,8 @@
             <!-- Return the offers -->
             <from id="_from1" uri="direct:getdoc"/>
             <log loggingLevel="INFO" message="received request for docs: ${body}"/>
+            <log loggingLevel="INFO" message="received Id ${header.id}"/>
+            <log loggingLevel="INFO" message="received jobId, candidateId: ${header.jobId}, ${header.candidateId}"/>
 
 	    <!-- sample curl request: curl -X GET -H "X-Auth-Token:AUTH_tka1ed04fceff14d5e8ad1d647ddbba9fb" -i http://192.168.0.20:8080/v1/AUTH_test/TEST/tmp/nandantestfile1 -->
 	    <setHeader headerName="Content-Type">
@@ -90,13 +114,13 @@
 <!--                 <simple>${body}</simple> -->
 <!--             </setHeader> -->
             <setHeader headerName="Authorization">
-                <simple>"Bearer AUTH_tka1ed04fceff14d5e8ad1d647ddbba9fb"</simple>
+                <simple>"AUTH_tk110762ac424540ad859b62bcdae9e9df"</simple>
             </setHeader>
             <setHeader headerName="CamelHttpUri">
-                <simple>http://192.168.0.20:8080/v1/AUTH_test/TEST/tmp/nandantestfile1</simple>
+                <constant>http://192.168.0.20:8080/v1/AUTH_test/TEST/${header.jobId}/${header.candidateId}</constant>
             </setHeader>
             <log id="_log5" message=">> Before calling GET on restClient : ${body}"/>
-            <to uri="http4://restClient"/>
+<!--             <to uri="http4://restClient"/> -->
             <log id="_log7" message=">> REST Response : ${body}"/>
             <to uri="log:gdrive?showAll=true&amp;multiline=true"/>
 <!--             <setBody> -->
