@@ -1,36 +1,37 @@
-# Fuse REST service to manage HR documents
+### Fuse REST service to manage documents stored in Openstack Swift
 
-This project builds out a document management REST service using Camel routes in Spring Boot via a Spring XML configuration file.
-
-The application utilizes the Spring [`@ImportResource`](http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/ImportResource.html) annotation to load a Camel Context definition via a [camel-context.xml](src/main/resources/spring/camel-context.xml) file on the classpath.
-
-### Running the application on OpenShift Cluster
-
-The following set of instructions will guide you on how to deploy the service in an OCP 4.0 cluster. An OCP cluster has been provisioned and you may oc login as follows
-
+Installation on OpenShift:
+* Using `oc` client, login into OpenShift
+* Create a namespace for the application
 ```
-$ oc login https://master.${GUID}.openshift.opentlc.com -u user1 -p r3dh4t1!
+$ oc new-project swift-integration
 ```
-
-+ Create your project namespace:
+* Give the default systemaccount in the namespace cluster view permissions
 ```
-$ oc new-project MY_PROJECT_NAME
+$ oc adm policy add-role-to-user view -n default
 ```
-
-+ Build and deploy the project to the Kubernetes / OpenShift cluster:
+* Create a file ```application.properties``` with the following contents (adapt as necessary):
 ```
-$ mvn clean -DskipTests fabric8:deploy -Popenshift
-
-$ oc get svc
-....
-NAME                           TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
-rest-split-transform-amq-lab   ClusterIP   172.30.211.103   <none>        8080/TCP   45s
-....
-
-$ oc expose service rest-split-transform-amq-lab
-
-$ curl -k http://`oc get route rest-split-transform-amq-lab -o template --template {{.spec.host}}`/rest/service/offers -X POST  -d 'Senor Fuerte, We are hereby pleased to offer you a salary of SALARY and a bonus of BONUS' -H 'content-type: text/html'
-
-$ curl -k http://`oc get route rest-split-transform-amq-lab -o template --template {{.spec.host}}`/rest/service/offers/10001 -X GET  -H 'content-type: text/html'
+swift.host=swift.example.com:8080
+swift.username=test:tester
+swift.password=testing
+swift.container=TEST
+```
+* Create a configmap ```swift-integration``` in the namespace
+```
+$ oc create configmap swift-integration --from-file=application.properties
+```
+* Deploy the application with the Fabric8 maven plugin:
+```
+$ mvn clean package fabric8:deploy -Popenshift
 ```
 
+Usage:
+* Put an object in Swift:
+```
+$ curl -X PUT -T /tmp/swifttest.txt http://$APP_ROUTE_HOST/api/put?object=test/swifttest.txt
+```
+* Retrieve an object from Swift:
+```
+$ curl http://$APP_ROUTE_HOST/api/get?object=test/swifttest.txt
+```
