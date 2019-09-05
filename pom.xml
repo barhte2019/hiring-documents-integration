@@ -79,6 +79,11 @@
       <version>2.6.0</version>
       <scope>test</scope>
     </dependency>
+    <!-- Swagger dependency -->
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-swagger-java-starter</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

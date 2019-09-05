@@ -22,6 +22,15 @@ public class DocumentSwiftGateway extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
+
+	restConfiguration()
+	    .component("servlet")
+	    //.bindingMode(RestBindingMode.auto)
+	    .dataFormatProperty("prettyPrint", "true")
+	    .apiContextPath("/api-docs")
+	    .apiContextRouteId("swagger")
+	    .apiProperty("api.title", "Document Service API").apiProperty("api.version", "1.0.0");
+
         rest()
             .get("/get")
             .param().name("object").type(RestParamType.query).dataType("string").endParam()
