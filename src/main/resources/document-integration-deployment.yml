@@ -1,0 +1,84 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    fabric8.io/git-commit: 6f5101b87c08175404a5ee51480b081c89d33178
+    fabric8.io/iconUrl: img/icons/camel.svg
+    fabric8.io/git-branch: master
+    fabric8.io/metrics-path: dashboard/file/camel-routes.json/?var-project=document-integration&var-version=1.0.0-SNAPSHOT
+  labels:
+    app: document-integration
+    provider: fabric8
+    version: 1.0.0-SNAPSHOT
+    group: com.redhat.gpte.rhte2019.ba
+  name: document-integration
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: document-integration
+      provider: fabric8
+      group: com.redhat.gpte.rhte2019.ba
+  template:
+    metadata:
+      annotations:
+        fabric8.io/git-commit: 6f5101b87c08175404a5ee51480b081c89d33178
+        fabric8.io/iconUrl: img/icons/camel.svg
+        fabric8.io/git-branch: master
+        fabric8.io/metrics-path: dashboard/file/camel-routes.json/?var-project=document-integration&var-version=1.0.0-SNAPSHOT
+      labels:
+        app: document-integration
+        provider: fabric8
+        version: 1.0.0-SNAPSHOT
+        group: com.redhat.gpte.rhte2019.ba
+    spec:
+      containers:
+      - env:
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        image: quay.io/nandanj/initialtest:latest
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 2
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 40
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: spring-boot
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 9779
+          name: prometheus
+          protocol: TCP
+        - containerPort: 8778
+          name: jolokia
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 40
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 200m
+            memory: 512Mi
+        securityContext:
+          privileged: false
